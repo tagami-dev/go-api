@@ -1,0 +1,20 @@
+[
+  {
+    "article_id": 0,
+    "title": "a",
+    "contents": "b",
+    "user_name": "c",
+    "nice": 0,
+    "comments": null,
+    "created_at": "0001-01-01T00:00:00Z"
+  },
+  {
+    "article_id": 0,
+    "comments": null,
+    "contents": "b",
+    "created_at": "0001-01-01T00:00:00Z",
+    "nice": 0,
+    "title": "a",
+    "user_name": "c"
+  }
+]
