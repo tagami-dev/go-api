@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
 func TestArticleListHandler(t *testing.T) {
@@ -19,17 +19,20 @@ func TestArticleListHandler(t *testing.T) {
 		{name: "alphabet query", query: "aaa", resultCode: http.StatusBadRequest},
 	}
 
+	gin.SetMode(gin.TestMode)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:8080/article/list?page=%s", tt.query)
+			router := gin.Default()
+			router.GET("/article/list", aCon.ArticleListHandler)
+
+			url := fmt.Sprintf("/article/list?page=%s", tt.query)
 			req := httptest.NewRequest(http.MethodGet, url, nil)
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
 
-			res := httptest.NewRecorder()
-
-			aCon.ArticleListHandler(res, req)
-
-			if res.Code != tt.resultCode {
-				t.Errorf("unexpected StatusCode: want %d but %d\n", tt.resultCode, res.Code)
+			if w.Code != tt.resultCode {
+				t.Errorf("unexpected StatusCode for %s: want %d but %d\n", tt.name, tt.resultCode, w.Code)
 			}
 		})
 	}
@@ -42,22 +45,24 @@ func TestArticleDetailHandler(t *testing.T) {
 		resultCode int
 	}{
 		{name: "number pathparam", articleID: "1", resultCode: http.StatusOK},
-		{name: "alphabet pathparam", articleID: "aaa", resultCode: http.StatusNotFound},
+		{name: "alphabet pathparam", articleID: "aaa", resultCode: http.StatusBadRequest},
 	}
+
+	gin.SetMode(gin.TestMode)
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			url := fmt.Sprintf("http://localhost:8080/article/%s", tt.articleID)
-			req := httptest.NewRequest(http.MethodGet, url, nil)
-			res := httptest.NewRecorder()
-			r := mux.NewRouter()
-			r.HandleFunc("/article/{id:[0-9]+}", aCon.ArticleDetailHandler).Methods(http.MethodGet)
-			r.ServeHTTP(res, req)
+			router := gin.Default()
+			router.GET("/article/:id", aCon.ArticleDetailHandler)
 
-			if res.Code != tt.resultCode {
-				t.Errorf("unexpected StatusCode: want %d but %d\n", tt.resultCode, res.Code)
+			url := fmt.Sprintf("/article/%s", tt.articleID)
+			req := httptest.NewRequest(http.MethodGet, url, nil)
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, req)
+
+			if w.Code != tt.resultCode {
+				t.Errorf("unexpected StatusCode for %s: want %d but %d\n", tt.name, tt.resultCode, w.Code)
 			}
 		})
-
 	}
 }

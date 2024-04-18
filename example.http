@@ -2,7 +2,7 @@ GET http://localhost:8080/article/list HTTP/1.1
 
 ###
 
-GET http://localhost:8080/article/list?page=2 HTTP/1.1
+GET http://localhost:8080/article/list?page=1 HTTP/1.1
 
 ###
 
@@ -21,7 +21,7 @@ POST http://localhost:8080/article/nice HTTP/1.1
 content-type: application/json
 
 {
-    "article_id": 3,
+    "article_id": 1,
     "title":"1st",
     "contents": "The first article will be published",
     "user_name": "tgm"

@@ -1,12 +1,10 @@
 package controllers
 
 import (
-	"encoding/json"
-	"io"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"github.com/tgm-tmy/go-api/apperrors"
 	"github.com/tgm-tmy/go-api/controllers/services"
 	"github.com/tgm-tmy/go-api/models"
@@ -20,81 +18,73 @@ func NewArticleController(s services.ArticleServicer) *ArticleController {
 	return &ArticleController{service: s}
 }
 
-func (c *ArticleController) HelloHandler(w http.ResponseWriter, req *http.Request) {
-	io.WriteString(w, "Hello, world!\n")
+func (c *ArticleController) HelloHandler(ctx *gin.Context) {
+	ctx.String(http.StatusOK, "Hello, world!\n")
 }
 
-func (c *ArticleController) PostArticleHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostArticleHandler(ctx *gin.Context) {
 	var reqArticle models.Article
-	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
+	if err := ctx.ShouldBindJSON(&reqArticle); err != nil {
 		err = apperrors.ReqBodyDecodeFailed.Wrap(err, "bad request body")
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
 	article, err := c.service.PostArticleService(reqArticle)
 	if err != nil {
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(article)
+	ctx.JSON(http.StatusOK, article)
 }
 
-func (c *ArticleController) ArticleListHandler(w http.ResponseWriter, req *http.Request) {
-	queryMap := req.URL.Query()
-
-	var page int
-	if p, ok := queryMap["page"]; ok && len(p) > 0 {
-		var err error
-		page, err = strconv.Atoi(p[0])
-		if err != nil {
-			err = apperrors.BadParam.Wrap(err, "queryparam must be number")
-			apperrors.ErrorHandler(w, req, err)
-			return
-		}
-	} else {
-		page = 1
+func (c *ArticleController) ArticleListHandler(ctx *gin.Context) {
+	page, err := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	if err != nil {
+		err = apperrors.BadParam.Wrap(err, "queryparam must be number")
+		apperrors.ErrorHandler(ctx, err)
+		return
 	}
 
 	articleList, err := c.service.GetArticleListService(page)
 	if err != nil {
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(articleList)
+	ctx.JSON(http.StatusOK, articleList)
 }
 
-func (c *ArticleController) ArticleDetailHandler(w http.ResponseWriter, req *http.Request) {
-	articleID, err := strconv.Atoi(mux.Vars(req)["id"])
+func (c *ArticleController) ArticleDetailHandler(ctx *gin.Context) {
+	articleID, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		err = apperrors.BadParam.Wrap(err, "pathparam must be number")
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
 	article, err := c.service.GetArticleService(articleID)
 	if err != nil {
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(article)
+	ctx.JSON(http.StatusOK, article)
 }
 
-func (c *ArticleController) PostNiceHandler(w http.ResponseWriter, req *http.Request) {
+func (c *ArticleController) PostNiceHandler(ctx *gin.Context) {
 	var reqArticle models.Article
-	if err := json.NewDecoder(req.Body).Decode(&reqArticle); err != nil {
-		apperrors.ErrorHandler(w, req, err)
-		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+	if err := ctx.ShouldBindJSON(&reqArticle); err != nil {
+		apperrors.ErrorHandler(ctx, err)
+		return
 	}
 
 	article, err := c.service.PostNiceService(reqArticle)
 	if err != nil {
-		apperrors.ErrorHandler(w, req, err)
+		apperrors.ErrorHandler(ctx, err)
 		return
 	}
 
-	json.NewEncoder(w).Encode(article)
+	ctx.JSON(http.StatusOK, article)
 }

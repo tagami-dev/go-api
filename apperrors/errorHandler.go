@@ -1,15 +1,15 @@
 package apperrors
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tgm-tmy/go-api/api/middlewares"
 )
 
-func ErrorHandler(w http.ResponseWriter, req *http.Request, err error) {
+func ErrorHandler(ctx *gin.Context, err error) {
 	var appErr *MyAppError
 	if !errors.As(err, &appErr) {
 		appErr = &MyAppError{
@@ -19,7 +19,7 @@ func ErrorHandler(w http.ResponseWriter, req *http.Request, err error) {
 		}
 	}
 
-	traceID := middlewares.GetTraceID(req.Context())
+	traceID := middlewares.GetTraceID(ctx)
 	log.Printf("[%d]error: %s\n", traceID, appErr)
 
 	var statusCode int
@@ -31,6 +31,10 @@ func ErrorHandler(w http.ResponseWriter, req *http.Request, err error) {
 	default:
 		statusCode = http.StatusInternalServerError
 	}
-	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(appErr)
+
+	ctx.JSON(statusCode, gin.H{
+		"error":   appErr.Message,
+		"errCode": appErr.ErrCode,
+		"traceID": traceID,
+	})
 }

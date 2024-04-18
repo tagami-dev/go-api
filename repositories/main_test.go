@@ -76,4 +76,5 @@ func TestMain(m *testing.M) {
 	m.Run()
 
 	teardown()
+	setupTestData()
 }

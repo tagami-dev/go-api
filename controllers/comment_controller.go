@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"github.com/tgm-tmy/go-api/controllers/services"
 	"github.com/tgm-tmy/go-api/models"
 )
@@ -16,16 +16,17 @@ func NewCommentController(s services.CommentServicer) *CommentController {
 	return &CommentController{service: s}
 }
 
-func (c *CommentController) PostCommentHandler(w http.ResponseWriter, req *http.Request) {
+func (c *CommentController) PostCommentHandler(ctx *gin.Context) {
 	var reqComment models.Comment
-	if err := json.NewDecoder(req.Body).Decode(&reqComment); err != nil {
-		http.Error(w, "fail to decode json\n", http.StatusBadRequest)
+	if err := ctx.ShouldBindJSON(&reqComment); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "fail to decode json"})
+		return
 	}
 
 	comment, err := c.service.PostCommentService(reqComment)
 	if err != nil {
-		http.Error(w, "fail internal exec\n", http.StatusInternalServerError)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "fail internal exec"})
 		return
 	}
-	json.NewEncoder(w).Encode(comment)
+	ctx.JSON(http.StatusOK, comment)
 }
