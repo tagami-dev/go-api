@@ -15,13 +15,13 @@ RUN go mod download
 COPY . /go/src/project/
 
 # Build the Go app
-RUN go build -o /bin/project
+RUN go build -o /bin/api
 
 # Final stage
 FROM scratch
 
 # Copy the built binary from the build stage to the final image
-COPY --from=build /bin/project /bin/project
+COPY --from=build /bin/api /bin/api
 
 # Set the binary as the entrypoint of the container
-ENTRYPOINT ["/bin/project"]
+ENTRYPOINT ["/bin/api"]
