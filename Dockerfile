@@ -18,7 +18,7 @@ COPY . /go/src/project/
 RUN go build -o /bin/api
 
 # Final stage
-FROM scratch
+FROM gcr.io/distroless/static-debian11:latest
 
 # Copy the built binary from the build stage to the final image
 COPY --from=build /bin/api /bin/api
