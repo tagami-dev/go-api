@@ -54,3 +54,60 @@ content-type: application/json
 {"title":"a","contents":"b","user_name":"c"}
 
 ###
+
+GET http://localhost:8001/article/list HTTP/1.1
+
+###
+
+GET http://localhost:8001/article/list?page=1 HTTP/1.1
+
+###
+
+GET http://localhost:8001/article/1 HTTP/1.1
+
+###
+
+POST http://localhost:8001/article HTTP/1.1
+content-type: application/json
+
+{"title":"x post","contents":"fire","user_name":"true man"}
+
+###
+
+POST http://localhost:8001/article/nice HTTP/1.1
+content-type: application/json
+
+{
+    "article_id": 1,
+    "title":"1st",
+    "contents": "The first article will be published",
+    "user_name": "tgm"
+}
+
+###
+
+POST http://localhost:8001/article/nice HTTP/1.1
+content-type: application/json
+
+{
+    "article_id": 2,
+    "title":"2nd",
+    "contents": "he second article will be about computer science",
+    "user_name": "tgm"
+}
+
+###
+
+POST http://localhost:8001/comment HTTP/1.1
+content-type: application/json
+
+{"article_id": 1,"message": "b"}
+
+###
+
+POST http://localhost:8001/article HTTP/1.1
+content-type: application/json
+
+{"title":"a","contents":"b","user_name":"c"}
+
+###
